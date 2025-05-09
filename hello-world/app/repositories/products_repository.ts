@@ -5,14 +5,14 @@ import {
   DeleteCommand,
   GetCommand,
   PutCommand,
-  QueryCommand,
   ScanCommand,
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb'
 import { ReturnValue } from '@aws-sdk/client-dynamodb'
+import env from '#start/env'
 
 export class ProductsRepository {
-  private tableName: string = 'Products'
+  private tableName: string = env.get('TABLE_NAME')
 
   async create(product: CreateProductRequest): Promise<ProductsModel> {
     const id = randomUUID()
