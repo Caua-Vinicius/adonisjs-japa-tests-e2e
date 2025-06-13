@@ -44,7 +44,7 @@ jobs:
           echo "AWS_SECRET_ACCESS_KEY=test" >> .env.test 
           echo "AWS_REGION=sa-east-1" >> .env.test
           echo "TABLE_NAME=products_test" >> .env.test
-          echo "AWS_ENDPOINT=http://localhost:9000" >> .env.test
+          echo "DYNAMODB_ENDPOINT=http://localhost:9000" >> .env.test
           echo "APP_KEY=xxxx-xx-xxxx-xxxx-xxxx-xxxx" >> .env.test
           echo "HOST=localhost" >> .env.test
           echo "LOG_LEVEL=debug" >> .env.test
