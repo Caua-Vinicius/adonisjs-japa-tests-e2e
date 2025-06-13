@@ -52,7 +52,7 @@ jobs:
 
       - name: Run tests and collect coverage
         working-directory: ./hello-world
-        run: npm test:cov
+        run: npm run test:cov
         env:
           NODE_ENV: test
 
