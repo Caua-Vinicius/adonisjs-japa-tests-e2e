@@ -63,10 +63,10 @@ jobs:
           path: ./hello-world/coverage/lcov.info
 
       - name: Comment on PR with coverage
-        if: github.event_name == 'pull_request'
-        uses: kkcjpop/coverage-comments@v2.2
+        if: github.event_name == 'pull_request' && success()
+        uses: MishaKav/jest-coverage-comment@main 
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          coverage-file: ./hello-world/coverage/lcov.info
-          delete-old-comments: true
-          comment-title: "Code Coverage Report"
+          coverage-path: ./hello-world/coverage/lcov.info
+          update-comment: true
+          title: 'Code Coverage Report'
