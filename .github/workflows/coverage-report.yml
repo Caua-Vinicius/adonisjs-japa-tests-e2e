@@ -7,7 +7,7 @@ on:
       - dev
   push:
     branches:
-      - main 
+      - main
 
 jobs:
   test_and_coverage:
@@ -31,12 +31,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install dependencies
+        working-directory: ./hello-world
         run: npm ci
 
       - name: Create .env.test
+        working-directory: ./hello-world
         run: |
           echo "AWS_ACCESS_KEY_ID=FAKE" >> .env.test
           echo "AWS_SECRET_ACCESS_KEY=FAKE" >> .env.test
@@ -49,7 +51,8 @@ jobs:
           echo "NODE_ENV=test" >> .env.test
 
       - name: Run tests and collect coverage
-        run: npm test:cov 
+        working-directory: ./hello-world
+        run: npm test:cov
         env:
           NODE_ENV: test
 
@@ -57,13 +60,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: coverage/lcov.info
+          path: ./hello-world/coverage/lcov.info
 
       - name: Comment on PR with coverage
         if: github.event_name == 'pull_request'
         uses: kkcjpop/coverage-comments@v2.2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          coverage-file: coverage/lcov.info
+          coverage-file: ./hello-world/coverage/lcov.info
           delete-old-comments: true
-          comment-title: 'Code Coverage Report'
+          comment-title: "Code Coverage Report"
