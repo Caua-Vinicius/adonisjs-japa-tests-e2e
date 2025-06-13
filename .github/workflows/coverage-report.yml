@@ -58,6 +58,7 @@ jobs:
 
       - name: Generate coverage comment
         id: cov
+        working-directory: ./hello-world
         run: |
           COMMENT=$(npm run coverage-summary)
           echo "comment<<EOF" >> $GITHUB_OUTPUT
