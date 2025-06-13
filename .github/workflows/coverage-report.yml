@@ -56,17 +56,16 @@ jobs:
         env:
           NODE_ENV: test
 
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
+      - name: Generate coverage comment
+        id: cov
+        run: |
+          COMMENT=$(npm run coverage-summary)
+          echo "comment<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMENT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      - name: Comment on PR
+        uses: peter-evans/create-or-update-comment@v4
         with:
-          name: coverage-report
-          path: ./hello-world/coverage/lcov.info
-
-      - name: Comment on PR with coverage
-        if: github.event_name == 'pull_request' && success()
-        uses: MishaKav/jest-coverage-comment@main 
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          coverage-path: ./hello-world/coverage/lcov.info
-          create-new-comment: false
-          title: 'Code Coverage Report'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.cov.outputs.comment }}
