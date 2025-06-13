@@ -1,9 +1,16 @@
-import { CreateTableCommand, ScalarAttributeType, KeyType } from '@aws-sdk/client-dynamodb'
+import {
+  CreateTableCommand,
+  DescribeTableCommand,
+  ResourceNotFoundException,
+  ScalarAttributeType,
+  KeyType,
+} from '@aws-sdk/client-dynamodb'
 
 import client from '../app/services/dynamo.js'
+import env from '#start/env'
 
 const params = {
-  TableName: 'Products',
+  TableName: env.get('TABLE_NAME'),
   AttributeDefinitions: [
     {
       AttributeName: 'id',
@@ -13,7 +20,7 @@ const params = {
   KeySchema: [
     {
       AttributeName: 'id',
-      KeyType: KeyType.HASH, 
+      KeyType: KeyType.HASH,
     },
   ],
   ProvisionedThroughput: {
@@ -22,13 +29,20 @@ const params = {
   },
 }
 
-async function createTable() {
+export async function createTable() {
   try {
-    const result = await client.send(new CreateTableCommand(params))
-    console.log('Tabela criada com sucesso:', result)
+    await client.send(new DescribeTableCommand({ TableName: params.TableName }))
+    console.log(`Table "${params.TableName}" already exists. Skipping creation.`)
   } catch (err) {
-    console.error('Erro ao criar tabela:', err)
+    if (err instanceof ResourceNotFoundException) {
+      try {
+        const result = await client.send(new CreateTableCommand(params))
+        console.log(`Table "${params.TableName}" created successfully:`, result)
+      } catch (createErr) {
+        console.error('Error while creating table:', createErr)
+      }
+    } else {
+      console.error('Error while checking table existence:', err)
+    }
   }
 }
-
-createTable()

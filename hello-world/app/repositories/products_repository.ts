@@ -5,14 +5,14 @@ import {
   DeleteCommand,
   GetCommand,
   PutCommand,
-  QueryCommand,
   ScanCommand,
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb'
 import { ReturnValue } from '@aws-sdk/client-dynamodb'
+import env from '#start/env'
 
 export class ProductsRepository {
-  private tableName: string = 'Products'
+  private tableName: string = env.get('TABLE_NAME')
 
   async create(product: CreateProductRequest): Promise<ProductsModel> {
     const id = randomUUID()
@@ -42,14 +42,17 @@ export class ProductsRepository {
       TableName: this.tableName,
       Key: { id },
     })
-  
+
     const result = await Dynamo.send(command)
     return (result.Item as ProductsModel) || null
   }
 
   async update(id: string, product: Partial<CreateProductRequest>): Promise<ProductsModel | null> {
+    const existingProduct = await this.getById(id)
+    if (!existingProduct) return null
+
     const updateExpressions = Object.keys(product)
-    if (updateExpressions.length === 0) return this.getById(id)
+    if (updateExpressions.length === 0) return existingProduct
 
     const UpdateExpression = `SET ${updateExpressions
       .map((key, index) => `#${key} = :value${index}`)
@@ -81,15 +84,20 @@ export class ProductsRepository {
     }
 
     const result = await Dynamo.send(new UpdateCommand(params))
-    return (result.Attributes as ProductsModel) || null
+    return result.Attributes as ProductsModel
   }
 
-  async delete(id: string): Promise<void> {
-    const params = {
-      TableName: this.tableName,
-      Key: { id },
-    }
+  async delete(id: string): Promise<ProductsModel | null> {
+    const product = await this.getById(id)
+    if (!product) return null
 
-    await Dynamo.send(new DeleteCommand(params))
+    await Dynamo.send(
+      new DeleteCommand({
+        TableName: this.tableName,
+        Key: { id },
+      })
+    )
+
+    return product
   }
 }

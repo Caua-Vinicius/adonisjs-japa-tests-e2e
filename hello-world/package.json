@@ -11,7 +11,8 @@
     "test": "node ace test",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "create-table": "node --loader ts-node/esm scripts/run_create_table.ts"
   },
   "imports": {
     "#controllers/*": "./app/controllers/*.js",
@@ -56,6 +57,7 @@
     "@adonisjs/lucid": "^21.6.0",
     "@aws-sdk/client-dynamodb": "^3.803.0",
     "@aws-sdk/lib-dynamodb": "^3.803.0",
+    "@faker-js/faker": "^9.7.0",
     "@vinejs/vine": "^3.0.0",
     "reflect-metadata": "^0.2.2",
     "ts-node": "^10.9.2"
