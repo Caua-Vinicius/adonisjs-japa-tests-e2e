@@ -1,0 +1,69 @@
+name: CI & Coverage
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+  push:
+    branches:
+      - main 
+
+jobs:
+  test_and_coverage:
+    runs-on: ubuntu-latest
+    services:
+      dynamodb-local:
+        image: amazon/dynamodb-local
+        ports:
+          - 9000:8000
+        options: >-
+          --name dynamodb-test
+          --health-cmd "curl http://localhost:8000 || exit 1"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create .env.test
+        run: |
+          echo "AWS_ACCESS_KEY_ID=FAKE" >> .env.test
+          echo "AWS_SECRET_ACCESS_KEY=FAKE" >> .env.test
+          echo "AWS_REGION=sa-east-1" >> .env.test
+          echo "AWS_TABLE_NAME=products_test" >> .env.test
+          echo "AWS_ENDPOINT=http://localhost:9000" >> .env.test
+          echo "APP_KEY=xxxx-xx-xxxx-xxxx-xxxx-xxxx" >> .env.test
+          echo "HOST=localhost" >> .env.test
+          echo "LOG_LEVEL=debug" >> .env.test
+          echo "NODE_ENV=test" >> .env.test
+
+      - name: Run tests and collect coverage
+        run: npm test:cov 
+        env:
+          NODE_ENV: test
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/lcov.info
+
+      - name: Comment on PR with coverage
+        if: github.event_name == 'pull_request'
+        uses: kkcjpop/coverage-comments@v2.2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          coverage-file: coverage/lcov.info
+          delete-old-comments: true
+          comment-title: 'Code Coverage Report'
