@@ -24,7 +24,7 @@ export default class ProductsController {
     const product = await this.service.getById(id)
 
     if (!product) {
-      return response.notFound('Product not found')
+      return response.status(404).send({ error: 'Product not found' })
     }
 
     return response.ok(product)
@@ -37,7 +37,7 @@ export default class ProductsController {
     const updatedProduct = await this.service.update(id, product)
 
     if (!updatedProduct) {
-      return response.notFound('Product not found')
+      return response.status(404).send({ error: 'Product not found' })
     }
 
     return response.ok(updatedProduct)
@@ -45,7 +45,11 @@ export default class ProductsController {
   async delete({ params, response }: HttpContext) {
     const { id } = params
 
-    await this.service.delete(id)
+    const deletedProduct = await this.service.delete(id)
+
+    if (!deletedProduct) {
+      return response.status(404).send({ error: 'Product not found' })
+    }
 
     return response.noContent()
   }
