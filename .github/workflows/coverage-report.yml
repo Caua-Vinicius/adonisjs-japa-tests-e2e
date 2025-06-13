@@ -43,7 +43,7 @@ jobs:
           echo "AWS_ACCESS_KEY_ID=FAKE" >> .env.test
           echo "AWS_SECRET_ACCESS_KEY=FAKE" >> .env.test
           echo "AWS_REGION=sa-east-1" >> .env.test
-          echo "AWS_TABLE_NAME=products_test" >> .env.test
+          echo "TABLE_NAME=products_test" >> .env.test
           echo "AWS_ENDPOINT=http://localhost:9000" >> .env.test
           echo "APP_KEY=xxxx-xx-xxxx-xxxx-xxxx-xxxx" >> .env.test
           echo "HOST=localhost" >> .env.test
