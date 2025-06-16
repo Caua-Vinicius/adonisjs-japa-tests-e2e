@@ -13,7 +13,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
-    "create-table": "node --loader ts-node/esm scripts/run_create_table.ts",
+    "create-table": "node --loader ts-node/esm --no-warnings scripts/run_create_table.ts",
     "coverage-summary": "node --loader ts-node/esm --no-warnings scripts/coverage_summary.ts"
   },
   "imports": {
