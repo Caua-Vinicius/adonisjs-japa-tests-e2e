@@ -1,0 +1,72 @@
+name: CI & Coverage
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+  push:
+    branches:
+      - main
+
+jobs:
+  test_and_coverage:
+    runs-on: ubuntu-latest
+    services:
+      dynamodb-local:
+        image: amazon/dynamodb-local
+        ports:
+          - 9000:8000
+        options: >-
+          --name dynamodb-test
+          --health-cmd "curl http://localhost:8000 || exit 1"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        working-directory: ./hello-world
+        run: npm ci
+
+      - name: Create .env.test
+        working-directory: ./hello-world
+        run: |
+          echo "AWS_ACCESS_KEY_ID=test" >> .env.test  
+          echo "AWS_SECRET_ACCESS_KEY=test" >> .env.test 
+          echo "AWS_REGION=sa-east-1" >> .env.test
+          echo "TABLE_NAME=products_test" >> .env.test
+          echo "DYNAMODB_ENDPOINT=http://localhost:9000" >> .env.test
+          echo "APP_KEY=xxxx-xx-xxxx-xxxx-xxxx-xxxx" >> .env.test
+          echo "HOST=localhost" >> .env.test
+          echo "LOG_LEVEL=debug" >> .env.test
+          echo "NODE_ENV=test" >> .env.test
+
+      - name: Run tests and collect coverage
+        working-directory: ./hello-world
+        run: npm run test:cov
+        env:
+          NODE_ENV: test
+
+      - name: Generate coverage comment
+        id: cov
+        working-directory: ./hello-world
+        run: |
+          COMMENT=$(npm run coverage-summary)
+          echo "comment<<EOF" >> $GITHUB_OUTPUT
+          echo "$COMMENT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      - name: Comment on PR
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.cov.outputs.comment }}
